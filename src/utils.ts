@@ -1,19 +1,29 @@
-import { platform } from 'os';
-import { basename, extname, win32 } from 'path';
+import { platform } from "os";
+import { basename, extname, win32 } from "path";
 
-import picomatch from 'picomatch';
-import slash from 'slash';
+import picomatch from "picomatch";
+import slash from "slash";
 
-import type { FileMatcher, FileMatcherIntent, FileMatcherIntentMatcher } from './types';
+import type {
+  FileMatcher,
+  FileMatcherIntent,
+  FileMatcherIntentMatcher,
+} from "./types";
 
-const COMPILED_EXTENSION = '.jsc';
-const COMPILED_EXTENSION_REGEX = new RegExp('\\' + COMPILED_EXTENSION +'$', 'i');
-const LOADER_EXTENSION = '.js';
-const LOADER_SUFFIX = '.loader';
-const TARGET_EXTENSION = '.js';
-const TARGET_EXTENSION_REGEX = new RegExp('\\' + TARGET_EXTENSION +'$', 'i');
+const COMPILED_EXTENSION = ".jsc";
+const COMPILED_EXTENSION_REGEX = new RegExp(
+  "\\" + COMPILED_EXTENSION + "$",
+  "i"
+);
+const LOADER_EXTENSION = ".js";
+const LOADER_SUFFIX = ".loader";
+const TARGET_EXTENSION = ".js";
+const TARGET_EXTENSION_REGEX = new RegExp("\\" + TARGET_EXTENSION + "$", "i");
 
-function createFileMatcher(includes: FileMatcherIntent[] = [], excludes: FileMatcherIntent[] = []): FileMatcher {
+function createFileMatcher(
+  includes: FileMatcherIntent[] = [],
+  excludes: FileMatcherIntent[] = []
+): FileMatcher {
   if (includes.length <= 0 && excludes.length <= 0) {
     return function bypass(): boolean {
       return true;
@@ -41,7 +51,9 @@ function createFileMatcher(includes: FileMatcherIntent[] = [], excludes: FileMat
     return includeMatchers.length <= 0;
   };
 
-  function createIntentMatcher(intent: FileMatcherIntent): FileMatcherIntentMatcher {
+  function createIntentMatcher(
+    intent: FileMatcherIntent
+  ): FileMatcherIntentMatcher {
     if (intent instanceof RegExp) {
       return intent;
     }
@@ -62,7 +74,12 @@ function fromCompiledToTargetExtension(file: string): string {
 }
 
 function fromTargetToCompiledExtension(file: string): string {
-  return file.replace(TARGET_EXTENSION_REGEX, COMPILED_EXTENSION);
+  const dest = file.replace(TARGET_EXTENSION_REGEX, COMPILED_EXTENSION);
+  if (!dest.includes(".compiled.jsc")) {
+    const patchedDest = dest.replace(".compiled", "");
+    return patchedDest.replace(".jsc", ".compiled.jsc");
+  }
+  return dest;
 }
 
 function isCompiledExtension(file: string): boolean {
@@ -87,7 +104,7 @@ function normalizeCodePathForUnix(path: string): string {
 
 function normalizeCodePathForWindows(path: string): string {
   path = win32.normalize(path);
-  path = path.replace(/\\/g, '\\\\');
+  path = path.replace(/\\/g, "\\\\");
 
   return path;
 }
